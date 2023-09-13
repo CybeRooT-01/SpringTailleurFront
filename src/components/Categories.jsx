@@ -1,6 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import "../styles/categories.css";
+import Pagination from "./Pagination";
 const Categories = () => {
   const url = "http://localhost:8080/api/categorie";
   const [data, setData] = useState();
@@ -10,6 +11,13 @@ const Categories = () => {
   const [allChecked, setAllChecked] = useState(false);
   const [checkedItems, setCheckedItems] = useState({});
   const [categorieLibelle, setCategorieLibelle] = useState("");
+  const [dataLen, setDataLen] = useState(0);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 2;
+  const lastIndex = currentPage * recordsPerPage;
+  const firstIndex = lastIndex - recordsPerPage;
+  const npage = Math.ceil(dataLen / recordsPerPage);
   const EtatAjoutOrEdit = () => {
     setEtat(!etat);
   };
@@ -18,6 +26,7 @@ const Categories = () => {
       .get(url)
       .then((response) => {
         setData(response.data.reverse());
+        setDataLen(response.data.length);
       })
       .catch((error) => {
         console.log(error);
@@ -121,7 +130,19 @@ const Categories = () => {
       return;
     }
   };
-
+  const prePage = () => {
+    if (currentPage !== 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  const changeCPage = (id) => {
+    setCurrentPage(id);
+  };
+  const nextPage = () => {
+    if (currentPage !== npage) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
   return (
     <div className="container custom-container">
       <div className="row d-flex align-items-center">
@@ -216,7 +237,7 @@ const Categories = () => {
           </thead>
           <tbody>
             {data &&
-              data.map((item, index) => (
+              data.slice(firstIndex, lastIndex).map((item, index) => (
                 <tr key={index}>
                   <td>
                     <div className="form-check">
@@ -237,7 +258,15 @@ const Categories = () => {
               ))}
           </tbody>
         </table>
-        <div className="d-flex justify-content-center"></div>
+        <div className="d-flex justify-content-center">
+          <Pagination
+            currentPage={currentPage}
+            npage={npage}
+            changeCPage={changeCPage}
+            prePage={prePage}
+            nextPage={nextPage}
+          />
+        </div>
       </div>
     </div>
   );
